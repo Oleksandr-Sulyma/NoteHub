@@ -51,11 +51,7 @@ export default async function Profile() {
 
         <div className={css.avatarWrapper}>
           <Image
-<<<<<<< HEAD
-            src={user.avatar || 'https://ac.goit.global/fullstack/react/default-avatar.jpg'}
-=======
             src={avatarUrl}
->>>>>>> new
             alt="User Avatar"
             width={120}
             height={120}
@@ -65,11 +61,7 @@ export default async function Profile() {
         </div>
 
         <div className={css.profileInfo}>
-<<<<<<< HEAD
-          <p>Username: {user.username}</p>
-=======
           <p>Username: {username}</p>
->>>>>>> new
           <p>Email: {user.email}</p>
         </div>
       </div>
