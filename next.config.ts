@@ -14,7 +14,13 @@ const nextConfig: NextConfig = {
       {
         protocol: 'https',
         hostname: 'ac.goit.global',
-        pathname: '**', // дозволяє завантаження будь-яких зображень з цього хоста
+        pathname: '**',
+      },
+
+      {
+        protocol: 'https',
+        hostname: 'res.cloudinary.com',
+        pathname: '**',
       },
     ],
   },

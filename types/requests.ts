@@ -14,5 +14,5 @@ export interface RegisterRequest {
 
 export interface  UpdateUserRequest {
   username?: string;
-  avatar?: string;
+  avatarFile?: File;
 }

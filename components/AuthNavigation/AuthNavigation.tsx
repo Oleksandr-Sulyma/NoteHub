@@ -9,27 +9,18 @@ import { toast } from 'react-hot-toast';
 
 export default function AuthNavigation() {
   const router = useRouter();
-  // const { isAuthenticated, user, clearIsAuthenticated } = useAuthStore();//
-  // const handleLogout = async () => {
-  //   try {
-  //     await logout();
-  //     clearIsAuthenticated();
-  //     toast.success('You have successfully logged out.');
-  //     router.push('/sign-in');
-  //     router.refresh();
-  //   } catch (error) {
-  //     toast.error('Logout failed. Try again.');
-  //     console.error('Logout failed:', error);
-  //   }
-  // };
-
   const { isAuthenticated, user } = useAuthStore();
   const clearIsAuthenticated = useAuthStore(state => state.clearIsAuthenticated);
 
   const handleLogout = async () => {
-    await logout();
-    clearIsAuthenticated();
-    router.push('/sign-in');
+    try {
+      await logout();
+      clearIsAuthenticated();
+      router.push('/sign-in');
+      router.refresh();
+    } catch (error) {
+      console.error("Logout failed", error);
+    }
   };
 
   return (
@@ -42,7 +33,7 @@ export default function AuthNavigation() {
             </Link>
           </li>
           <li className={css.navigationItem}>
-            <p className={css.userEmail}>{user?.email || 'User email'}</p>
+            <p className={css.userEmail}>{user?.username || user?.email}</p>
             <button type="button" className={css.logoutButton} onClick={handleLogout}>
               Logout
             </button>

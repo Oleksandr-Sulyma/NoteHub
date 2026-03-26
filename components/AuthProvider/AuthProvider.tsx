@@ -8,21 +8,7 @@ type Props = {
   children: ReactNode;
 };
 
-export default function AuthProvider({ children }: Props) {
-  const setUser = useAuthStore(state => state.setUser);
-  const clearIsAuthenticated = useAuthStore(state => state.clearIsAuthenticated);
-
-  useEffect(() => {
-    const fetchUser = async () => {
-      const isAuthenticated = await checkSession();
-      if (isAuthenticated) {
-        const user = await getMe();
-        if (user) setUser(user);
-      } else {
-        clearIsAuthenticated();
-      }
-    };
-    fetchUser();
-  }, [setUser, clearIsAuthenticated]);
-  return children;
+export default function AuthProvider({ children }: { children: ReactNode }) {
+  // Ми прибрали useEffect, бо стан ініціалізується в AuthInitializer
+  return <>{children}</>;
 }

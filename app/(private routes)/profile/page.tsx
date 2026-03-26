@@ -1,11 +1,10 @@
-import type { Metadata } from 'next';
 import Image from 'next/image';
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import { getServerMe } from '@/lib/api/serverApi';
 import css from './ProfilePage.module.css';
-
 import { SITE_NAME, BASE_URL, OG_IMAGE } from '@/lib/constants/seo';
+import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
   title: 'Profile | NoteHub - Simple and Efficient Note Management',
@@ -34,6 +33,12 @@ export default async function Profile() {
     redirect('/sign-in');
   }
 
+  const username = user.username ?? user.email;
+  const avatarUrl =
+    user.photoUrl && user.photoUrl.startsWith('http')
+      ? user.photoUrl
+      : 'https://ac.goit.global/fullstack/react/default-avatar.jpg';
+
   return (
     <main className={css.mainContent}>
       <div className={css.profileCard}>
@@ -43,9 +48,14 @@ export default async function Profile() {
             Edit Profile
           </Link>
         </div>
+
         <div className={css.avatarWrapper}>
           <Image
+<<<<<<< HEAD
             src={user.avatar || 'https://ac.goit.global/fullstack/react/default-avatar.jpg'}
+=======
+            src={avatarUrl}
+>>>>>>> new
             alt="User Avatar"
             width={120}
             height={120}
@@ -53,8 +63,13 @@ export default async function Profile() {
             priority
           />
         </div>
+
         <div className={css.profileInfo}>
+<<<<<<< HEAD
           <p>Username: {user.username}</p>
+=======
+          <p>Username: {username}</p>
+>>>>>>> new
           <p>Email: {user.email}</p>
         </div>
       </div>

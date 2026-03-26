@@ -14,19 +14,39 @@ export async function POST(req: NextRequest) {
     const setCookie = apiRes.headers['set-cookie'];
 
     if (setCookie) {
+      const response = NextResponse.json(apiRes.data, { status: apiRes.status });
       const cookieArray = Array.isArray(setCookie) ? setCookie : [setCookie];
+
       for (const cookieStr of cookieArray) {
         const parsed = parse(cookieStr);
-        const options = {
-          expires: parsed.Expires ? new Date(parsed.Expires) : undefined,
-          path: parsed.Path,
-          maxAge: Number(parsed['Max-Age']),
-        };
-        if (parsed.accessToken) cookieStore.set('accessToken', parsed.accessToken, options);
-        if (parsed.refreshToken) cookieStore.set('refreshToken', parsed.refreshToken, options);
+        
+        // 1. Визначаємо ім'я куки (accessToken, refreshToken або sessionId)
+        let name = null;
+        if (parsed.accessToken) name = 'accessToken';
+        else if (parsed.refreshToken) name = 'refreshToken';
+        else if (parsed.sessionId) name = 'sessionId';
+
+        const value = name ? parsed[name] : null;
+
+        if (name && value) {
+          const options = {
+            expires: parsed.Expires ? new Date(parsed.Expires) : undefined,
+            path: parsed.Path || '/',
+            maxAge: parsed['Max-Age'] ? Number(parsed['Max-Age']) : undefined,
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: 'lax' as const,
+          };
+
+          // 2. Встановлюємо в cookieStore (для сервера)
+          cookieStore.set(name, value, options);
+
+          // 3. ВАЖЛИВО: Також додаємо в response (для браузера)
+          response.cookies.set(name, value, options);
+        }
       }
 
-      return NextResponse.json(apiRes.data, { status: apiRes.status });
+      return response;
     }
 
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });

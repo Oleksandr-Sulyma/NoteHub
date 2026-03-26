@@ -27,12 +27,12 @@ export default function NoteList({ notes }: NoteListProps) {
   return (
     <ul className={css.list}>
       {notes.map(note => (
-        <li key={note.id} className={css.listItem}>
+        <li key={note._id} className={css.listItem}>
           <h2 className={css.title}>{note.title}</h2>
           <p className={css.content}>{note.content}</p>
           <div className={css.footer}>
             <span className={css.tag}>{note.tag}</span>
-            <Link href={`/notes/${note.id}`} scroll={false} className={css.link}>
+            <Link href={`/notes/${note._id}`} scroll={false} className={css.link}>
               View details
             </Link>
             <button
@@ -40,7 +40,7 @@ export default function NoteList({ notes }: NoteListProps) {
               disabled={isPending}
               onClick={() => {
                 if (confirm('Are you sure you want to delete this note?')) {
-                  deleteNoteM(note.id);
+                  deleteNoteM(note._id);
                 }
               }}
             >

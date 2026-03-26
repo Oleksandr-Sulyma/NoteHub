@@ -16,8 +16,7 @@ export default function SignIn() {
   const setUser = useAuthStore(state => state.setUser);
 
   const handleSubmit = async (formData: FormData) => {
-    // setError('');//
-    setIsPending(true); //
+    setIsPending(true); 
 
     try {
       const formValues = Object.fromEntries(formData) as unknown as LoginRequest;

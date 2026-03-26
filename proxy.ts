@@ -9,60 +9,80 @@ const publicRoutes = ['/sign-in', '/sign-up'];
 export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const cookieStore = await cookies();
+  
   const accessToken = cookieStore.get('accessToken')?.value;
   const refreshToken = cookieStore.get('refreshToken')?.value;
+  const sessionId = cookieStore.get('sessionId')?.value;
 
   const isPublicRoute = publicRoutes.some(route => pathname.startsWith(route));
   const isPrivateRoute = privateRoutes.some(route => pathname.startsWith(route));
 
-  if (!accessToken) {
-    if (refreshToken) {
+  // 1. Спроба оновлення, якщо accessToken зник, але є refreshToken та sessionId
+  if (!accessToken && refreshToken && sessionId) {
+    try {
+      console.log('--- Middleware: Attempting to refresh session ---');
       const data = await checkServerSession();
-      const setCookie = data.headers['set-cookie'];
+      
+      const setCookieHeaders = data.headers['set-cookie'] || data.headers['Set-Cookie'];
 
-      if (setCookie) {
-        const cookieArray = Array.isArray(setCookie) ? setCookie : [setCookie];
+      if (setCookieHeaders) {
+        console.log('--- Middleware: New session cookies received ---');
+        
+        const response = isPublicRoute 
+          ? NextResponse.redirect(new URL('/', request.url)) 
+          : NextResponse.next();
+
+        const cookieArray = Array.isArray(setCookieHeaders) ? setCookieHeaders : [setCookieHeaders];
+
         for (const cookieStr of cookieArray) {
           const parsed = parse(cookieStr);
-          const options = {
-            expires: parsed.Expires ? new Date(parsed.Expires) : undefined,
-            path: parsed.Path,
-            maxAge: Number(parsed['Max-Age']),
-          };
-          if (parsed.accessToken) cookieStore.set('accessToken', parsed.accessToken, options);
-          if (parsed.refreshToken) cookieStore.set('refreshToken', parsed.refreshToken, options);
-        }
-        if (isPublicRoute) {
-          return NextResponse.redirect(new URL('/', request.url), {
-            headers: {
-              Cookie: cookieStore.toString(),
-            },
-          });
-        }
-        if (isPrivateRoute) {
-          return NextResponse.next({
-            headers: {
-              Cookie: cookieStore.toString(),
-            },
-          });
-        }
-      }
-    }
-    if (isPublicRoute) {
-      return NextResponse.next();
-    }
+          
+          // Визначаємо ім'я куки (тепер включаючи sessionId)
+          let name = null;
+          if (parsed.accessToken) name = 'accessToken';
+          else if (parsed.refreshToken) name = 'refreshToken';
+          else if (parsed.sessionId) name = 'sessionId';
+          
+          const value = name ? parsed[name] : null;
 
-    if (isPrivateRoute) {
-      return NextResponse.redirect(new URL('/sign-in', request.url));
+          if (name && value) {
+            response.cookies.set({
+              name,
+              value,
+              expires: parsed.Expires ? new Date(parsed.Expires) : undefined,
+              path: '/', 
+              maxAge: parsed['Max-Age'] ? Number(parsed['Max-Age']) : undefined,
+              httpOnly: true,
+              secure: process.env.NODE_ENV === 'production',
+              sameSite: 'lax',
+            });
+          }
+        }
+        return response;
+      }
+    } catch (error) {
+      console.error('--- Middleware: Refresh failed ---', error);
+      if (isPrivateRoute) {
+    return NextResponse.redirect(new URL('/sign-in', request.url));
+  }
     }
   }
 
+  // 2. Захист приватних роутів
+  if (!accessToken) {
+    if (isPrivateRoute) {
+      console.log('--- Middleware: No access, redirecting to sign-in ---');
+      return NextResponse.redirect(new URL('/sign-in', request.url));
+    }
+    return NextResponse.next();
+  }
+
+  // 3. Редирект з публічних роутів, якщо вже залогінений
   if (isPublicRoute) {
     return NextResponse.redirect(new URL('/', request.url));
   }
-  if (isPrivateRoute) {
-    return NextResponse.next();
-  }
+
+  return NextResponse.next();
 }
 
 export const config = {

@@ -16,7 +16,7 @@ export type NoteTag = (typeof NOTE_TAGS)[number];
 export type NoteFilterTag = NoteTag | 'All';
 
 export interface Note {
-  id: string;
+  _id: string;
   title: string;
   content: string;
   createdAt: string;
