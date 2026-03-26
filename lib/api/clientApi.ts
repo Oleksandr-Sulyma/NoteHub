@@ -7,6 +7,23 @@ import type {
   RegisterRequest,
   UpdateUserRequest,
 } from '@/types/requests';
+import { isAxiosError } from 'axios';
+
+async function withRefresh<T>(fn: () => Promise<T>): Promise<T> {
+  try {
+    return await fn();
+  } catch (err: any) {
+    if (isAxiosError(err) && err.response?.status === 401) {
+      try {
+        await nextServer.get('/auth/session');
+        return await fn();
+      } catch {
+        throw err; 
+      }
+    }
+    throw err;
+  }
+}
 
 export const register = async (dataReg: RegisterRequest): Promise<User> => {
   const { data } = await nextServer.post<User>('/auth/register', dataReg);
@@ -28,65 +45,62 @@ export const checkSession = async (): Promise<boolean> => {
 };
 
 export const getMe = async (): Promise<User> => {
-  const { data } = await nextServer.get<User>('/users/me');
-  return data;
+  return withRefresh(async () => {
+    const { data } = await nextServer.get<User>('/users/me');
+    return data;
+  });
 };
-
-// export const updateMe = async (userData: UpdateUserRequest): Promise<User> => {
-//   const payload = {
-//     userName: userData.username,
-//     photoUrl: userData.avatar,
-//   };
-
-//   const { data } = await nextServer.patch<User>('/users/me', payload);
-//   return data;
-// };
 
 export const updateMe = async ({
   username,
   avatarFile,
 }: UpdateUserRequest): Promise<Partial<User>> => {
   const formData = new FormData();
+  if (username) formData.append('username', username);
+  if (avatarFile) formData.append('avatar', avatarFile);
 
-  if (username) {
-    formData.append('username', username);
-  }
-
-  if (avatarFile) {
-    formData.append('avatar', avatarFile);
-  }
-
-  const { data } = await nextServer.patch<Partial<User>>('/users/me', formData);
-
-  return data;
+  return withRefresh(async () => {
+    const { data } = await nextServer.patch<Partial<User>>('/users/me', formData);
+    return data;
+  });
 };
 
-
 export const fetchNotes = async (params: FetchNotesParams): Promise<FetchNotesResponse> => {
-  const { data } = await nextServer.get<FetchNotesResponse>('/notes', {
-    params: { ...params, perPage: 12 },
+  return withRefresh(async () => {
+    const { data } = await nextServer.get<FetchNotesResponse>('/notes', {
+      params: { ...params, perPage: 12 },
+    });
+    return data;
   });
-  return data;
 };
 
 export const fetchNoteById = async (id: string): Promise<Note> => {
-  const { data } = await nextServer.get<Note>(`/notes/${id}`);
-  return data;
+  return withRefresh(async () => {
+    const { data } = await nextServer.get<Note>(`/notes/${id}`);
+    return data;
+  });
 };
 
 export const createNote = async (noteData: NoteFormValues): Promise<Note> => {
-  const { data } = await nextServer.post<Note>('/notes', noteData);
-  return data;
+  return withRefresh(async () => {
+    const { data } = await nextServer.post<Note>('/notes', noteData);
+    return data;
+  });
 };
 
 export const deleteNote = async (id: string): Promise<Note> => {
-  const { data } = await nextServer.delete<Note>(`/notes/${id}`);
-  return data;
+  return withRefresh(async () => {
+    const { data } = await nextServer.delete<Note>(`/notes/${id}`);
+    return data;
+  });
 };
 
 export const uploadImage = async (file: File): Promise<string> => {
   const formData = new FormData();
   formData.append('file', file);
-  const { data } = await nextServer.post('/upload', formData);
-  return data.url;
+
+  return withRefresh(async () => {
+    const { data } = await nextServer.post('/upload', formData);
+    return data.url;
+  });
 };
