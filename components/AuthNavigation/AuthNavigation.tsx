@@ -16,10 +16,12 @@ export default function AuthNavigation() {
     try {
       await logout();
       clearIsAuthenticated();
+      toast.success('Successfully logged out!'); 
       router.push('/sign-in');
       router.refresh();
     } catch (error) {
       console.error("Logout failed", error);
+      toast.error('Failed to logout. Please try again.');
     }
   };
 

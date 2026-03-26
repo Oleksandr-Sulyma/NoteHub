@@ -8,8 +8,8 @@ import TanStackProvider from '@/components/TanStackProvider/TanStackProvider';
 import AuthProvider from '@/components/AuthProvider/AuthProvider';
 import { SITE_NAME, BASE_URL, OG_IMAGE } from '@/lib/constants/seo';
 import { Toaster } from 'react-hot-toast';
-import { getServerMe } from '@/lib/api/serverApi'; // ДОДАЛИ
-import AuthInitializer from '@/components/AuthInitializer/AuthInitializer'; // ДОДАЛИ
+import { getServerMe } from '@/lib/api/serverApi'; 
+import AuthInitializer from '@/components/AuthInitializer/AuthInitializer'; 
 
 export const dynamic = 'force-dynamic';
 

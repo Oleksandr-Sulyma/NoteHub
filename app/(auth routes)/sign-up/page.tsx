@@ -12,7 +12,7 @@ export default function SignUp() {
   const router = useRouter();
   const [error, setError] = useState('');
 
-  const [isPending, setIsPending] = useState(false); //
+  const [isPending, setIsPending] = useState(false);
 
   const setUser = useAuthStore(state => state.setUser);
 
@@ -27,7 +27,7 @@ export default function SignUp() {
       if (user) {
         setUser(user);
         router.push('/profile');
-        router.refresh(); //
+        router.refresh();
       } else {
         setError('Invalid email or password');
       }
@@ -38,8 +38,7 @@ export default function SignUp() {
         setError('Something went wrong. Please try again.');
       }
     } finally {
-      //
-      setIsPending(false); //
+      setIsPending(false);
     }
   };
 

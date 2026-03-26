@@ -9,11 +9,8 @@ export default function AuthInitializer({ user }: { user: any }) {
 
   useLayoutEffect(() => {
     if (user) {
-      // Якщо сервер знайшов юзера — синхронізуємо клієнт
       setUser(user);
     } else {
-      // Якщо сервера каже null, ми ПЕРЕВІРЯЄМО, чи є в куках хоча б щось.
-      // Якщо кук взагалі немає (був Logout), тоді очищуємо стор.
       const hasCookies = document.cookie.includes('refreshToken');
       if (!hasCookies) {
         clear();

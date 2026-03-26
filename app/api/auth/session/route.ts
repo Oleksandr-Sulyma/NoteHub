@@ -21,8 +21,8 @@ export async function GET() {
           },
         });
         return NextResponse.json({ success: true, refreshed: false }, { status: 200 });
-      } catch (error) {
-        console.log("Access token invalid, trying to refresh...");
+      } catch {
+    
       }
     }
 
@@ -73,7 +73,7 @@ export async function GET() {
     return NextResponse.json({ success: false, refreshed: false }, { status: 200 });
   } catch (error) {
     if (isAxiosError(error)) {
-      console.error('Refresh Error:', error.response?.data || error.message);
+      logErrorResponse(error.response?.data || error.message);
       return NextResponse.json({ success: false, refreshed: false }, { status: 200 });
     }
     return NextResponse.json({ success: false, refreshed: false }, { status: 200 });

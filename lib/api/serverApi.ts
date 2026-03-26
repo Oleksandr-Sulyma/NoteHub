@@ -7,7 +7,6 @@ async function withRefresh<T>(fn: () => Promise<T>): Promise<T> {
   try {
     return await fn();
   } catch (err: any) {
-    // якщо помилка 401, пробуємо оновити сесію
     if (err.response?.status === 401) {
       const cookieStore = await cookies();
       const refreshRes = await nextServer.get('/auth/session', {
@@ -15,7 +14,6 @@ async function withRefresh<T>(fn: () => Promise<T>): Promise<T> {
       });
 
       if (refreshRes.data.success) {
-        // повторюємо оригінальний запит
         return await fn();
       }
     }
@@ -31,22 +29,14 @@ export async function getServerMe(): Promise<User | null> {
     const refreshToken = cookieStore.get('refreshToken')?.value;
     const sessionId = cookieStore.get('sessionId')?.value;
 
-
-    const allCookies = cookieStore.getAll();
-console.log("SERVER COOKIES NAMES:", allCookies.map(c => c.name));
-    // Якщо немає основних ключів сесії - навіть не робимо запит
     if (!refreshToken || !sessionId) {
-      console.log("getServerMe: Missing session cookies");
       return null;
     }
-
-    // Формуємо Cookie заголовок вручну для бекенду
     const cookieHeader = `accessToken=${accessToken}; refreshToken=${refreshToken}; sessionId=${sessionId}`;
 
     const res = await nextServer.get('/users/me', {
       headers: { 
         Cookie: cookieHeader,
-        // Додаємо Authorization тільки якщо accessToken є
         ...(accessToken && { Authorization: `Bearer ${accessToken}` })
       },
     });
@@ -57,9 +47,6 @@ console.log("SERVER COOKIES NAMES:", allCookies.map(c => c.name));
       photoUrl: res.data.avatar ?? null,
     };
   } catch (error: any) {
-    // Якщо 401 або інша помилка - просто повертаємо null
-    // Це НЕ дасть впасти всьому додатку
-    console.error("getServerMe: Request failed", error.response?.status || error.message);
     return null;
   }
 }
@@ -80,7 +67,6 @@ export const checkServerSession = async () => {
       headers: res.headers 
     };
   } catch (error) {
-    console.error("Error in checkServerSession:", error);
     throw error; 
   }
 };

@@ -17,17 +17,13 @@ export async function proxy(request: NextRequest) {
   const isPublicRoute = publicRoutes.some(route => pathname.startsWith(route));
   const isPrivateRoute = privateRoutes.some(route => pathname.startsWith(route));
 
-  // 1. Спроба оновлення, якщо accessToken зник, але є refreshToken та sessionId
   if (!accessToken && refreshToken && sessionId) {
     try {
-      console.log('--- Middleware: Attempting to refresh session ---');
       const data = await checkServerSession();
       
       const setCookieHeaders = data.headers['set-cookie'] || data.headers['Set-Cookie'];
 
       if (setCookieHeaders) {
-        console.log('--- Middleware: New session cookies received ---');
-        
         const response = isPublicRoute 
           ? NextResponse.redirect(new URL('/', request.url)) 
           : NextResponse.next();
@@ -36,8 +32,6 @@ export async function proxy(request: NextRequest) {
 
         for (const cookieStr of cookieArray) {
           const parsed = parse(cookieStr);
-          
-          // Визначаємо ім'я куки (тепер включаючи sessionId)
           let name = null;
           if (parsed.accessToken) name = 'accessToken';
           else if (parsed.refreshToken) name = 'refreshToken';
@@ -61,23 +55,19 @@ export async function proxy(request: NextRequest) {
         return response;
       }
     } catch (error) {
-      console.error('--- Middleware: Refresh failed ---', error);
       if (isPrivateRoute) {
     return NextResponse.redirect(new URL('/sign-in', request.url));
   }
     }
   }
 
-  // 2. Захист приватних роутів
   if (!accessToken) {
     if (isPrivateRoute) {
-      console.log('--- Middleware: No access, redirecting to sign-in ---');
       return NextResponse.redirect(new URL('/sign-in', request.url));
     }
     return NextResponse.next();
   }
 
-  // 3. Редирект з публічних роутів, якщо вже залогінений
   if (isPublicRoute) {
     return NextResponse.redirect(new URL('/', request.url));
   }

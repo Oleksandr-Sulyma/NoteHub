@@ -5,13 +5,13 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { login } from '@/lib/api/clientApi';
 import type { LoginRequest } from '@/types/requests';
-import { useAuthStore } from '@/lib/store/authStore'; //
+import { useAuthStore } from '@/lib/store/authStore'; 
 import { isAxiosError } from 'axios';
 
 export default function SignIn() {
-  const router = useRouter(); //
+  const router = useRouter(); 
   const [error, setError] = useState('');
-  const [isPending, setIsPending] = useState(false); //
+  const [isPending, setIsPending] = useState(false); 
 
   const setUser = useAuthStore(state => state.setUser);
 
@@ -25,7 +25,7 @@ export default function SignIn() {
       if (user) {
         setUser(user);
         router.push('/profile');
-        router.refresh(); //
+        router.refresh(); 
       } else {
         setError('Invalid email or password');
       }
@@ -36,7 +36,7 @@ export default function SignIn() {
         setError('Something went wrong. Please try again.');
       }
     } finally {
-      setIsPending(false); //
+      setIsPending(false);
     }
   };
 

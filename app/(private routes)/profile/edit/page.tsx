@@ -60,7 +60,6 @@ export default function EditProfilePage() {
       router.push('/profile');
       router.refresh();
     } catch (error) {
-      console.error('Update error:', error);
       toast.error('Failed to update profile');
     } finally {
       setIsPending(false);

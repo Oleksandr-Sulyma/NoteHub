@@ -19,8 +19,6 @@ export async function POST(req: NextRequest) {
 
       for (const cookieStr of cookieArray) {
         const parsed = parse(cookieStr);
-        
-        // 1. Визначаємо ім'я куки (accessToken, refreshToken або sessionId)
         let name = null;
         if (parsed.accessToken) name = 'accessToken';
         else if (parsed.refreshToken) name = 'refreshToken';
@@ -37,11 +35,7 @@ export async function POST(req: NextRequest) {
             secure: process.env.NODE_ENV === 'production',
             sameSite: 'lax' as const,
           };
-
-          // 2. Встановлюємо в cookieStore (для сервера)
           cookieStore.set(name, value, options);
-
-          // 3. ВАЖЛИВО: Також додаємо в response (для браузера)
           response.cookies.set(name, value, options);
         }
       }

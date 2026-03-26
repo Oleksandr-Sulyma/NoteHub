@@ -9,6 +9,5 @@ type Props = {
 };
 
 export default function AuthProvider({ children }: { children: ReactNode }) {
-  // Ми прибрали useEffect, бо стан ініціалізується в AuthInitializer
   return <>{children}</>;
 }

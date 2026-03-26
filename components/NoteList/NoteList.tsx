@@ -5,6 +5,8 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { deleteNote } from '@/lib/api/clientApi';
 import type { Note } from '@/types/note';
 import Link from 'next/link';
+import { toast } from 'react-hot-toast';
+import { logErrorResponse } from '@/app/api/_utils/utils';
 
 interface NoteListProps {
   notes: Note[];
@@ -17,10 +19,11 @@ export default function NoteList({ notes }: NoteListProps) {
     mutationFn: (id: string) => deleteNote(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['notes'] });
+      toast.success('Note deleted successfully'); 
     },
     onError: error => {
-      console.error('Failed to delete note:', error);
-      alert('Could not delete the note. Please try again.');
+      logErrorResponse(error); 
+      toast.error('Could not delete the note. Please try again.');
     },
   });
 
@@ -39,7 +42,7 @@ export default function NoteList({ notes }: NoteListProps) {
               className={css.button}
               disabled={isPending}
               onClick={() => {
-                if (confirm('Are you sure you want to delete this note?')) {
+                if (window.confirm('Are you sure you want to delete this note?')) {
                   deleteNoteM(note._id);
                 }
               }}
