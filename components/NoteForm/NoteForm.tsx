@@ -1,44 +1,39 @@
 'use client';
 
-import { useState } from 'react';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
 import { useRouter } from 'next/navigation';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
-import { AxiosError } from 'axios';
 
 import { createNote } from '@/lib/api/clientApi';
 import { useDraftStore } from '@/lib/store/noteStore';
 import { NOTE_TAGS } from '@/types/note';
-import type { NoteFormValues, NoteTag } from '@/types/note';
+import type { NoteSchema, NoteTag } from '@/types/note';
+import  { noteSchema } from '@/types/note';
 
 import css from './NoteForm.module.css';
-
-type FormErrors = Partial<Record<'title' | 'content', string>>;
-interface ApiErrorResponse {
-  message: string;
-}
 
 export default function NoteForm() {
   const router = useRouter();
   const queryClient = useQueryClient();
-  const [errors, setErrors] = useState<FormErrors>({});
   const { draft, setDraft, clearDraft } = useDraftStore();
 
-  const validate = (values: NoteFormValues): FormErrors => {
-    const errors: FormErrors = {};
-    if (!values.title.trim()) {
-      errors.title = 'Title is required';
-    } else if (values.title.length < 3) {
-      errors.title = 'Min 3 characters';
-    } else if (values.title.length > 50) {
-      errors.title = 'Max 50 characters';
-    }
+  const {
+    register: noteInput,
+    handleSubmit,
+    watch,
+    formState: { errors, isSubmitting },
+  } = useForm<NoteSchema>({
+    resolver: zodResolver(noteSchema),
+    defaultValues: {
+      title: draft.title || '',
+      content: draft.content || '',
+      tag: (draft.tag as NoteTag) || NOTE_TAGS[0],
+    },
+  });
 
-    if (values.content.length > 500) {
-      errors.content = 'Max 500 characters';
-    }
-    return errors;
-  };
+  const formValues = watch();
 
   const { mutate, isPending } = useMutation({
     mutationFn: createNote,
@@ -48,85 +43,52 @@ export default function NoteForm() {
       clearDraft();
       router.push('/notes/filter/All');
     },
-    onError: (error: AxiosError<ApiErrorResponse>) => {
+    onError: (error: any) => {
       toast.error(error.response?.data?.message || 'Failed to create note');
     },
   });
 
-  const handleChange = (
-    event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
-  ) => {
-    const { name, value } = event.target;
-    setDraft({ ...draft, [name]: value });
+  
 
-    if (errors[name as keyof FormErrors]) {
-      setErrors(prev => ({ ...prev, [name]: undefined }));
-    }
-  };
-
-  const handleSubmit = (formData: FormData) => {
-    const values: NoteFormValues = {
-      title: ((formData.get('title') as string) || '').trim(),
-      content: ((formData.get('content') as string) || '').trim(),
-      tag: formData.get('tag') as NoteTag,
-    };
-
-    const validationErrors = validate(values);
-
-    if (Object.keys(validationErrors).length > 0) {
-      setErrors(validationErrors);
-      return;
-    }
-
-    setErrors({});
+  const onSubmit = (values: NoteSchema) => {
     mutate(values);
-  };
+  }
+
 
   return (
-    <form action={handleSubmit} className={css.form}>
+    <form onSubmit={handleSubmit(onSubmit)} className={css.form} noValidate>
       <div className={css.formGroup}>
         <label htmlFor="title">Title</label>
         <input
-          id="title"
+          {...noteInput('title')}
           type="text"
-          name="title"
           placeholder="Enter note title..."
-          className={css.input}
-          value={draft.title}
-          onChange={handleChange}
+          className={`${css.input} ${errors.title ? css.inputError : ''}`}
         />
-        {errors.title && <span className={css.error}>{errors.title}</span>}
+        {errors.title && <span className={css.error}>{errors.title.message}</span>}
       </div>
 
       <div className={css.formGroup}>
         <label htmlFor="content">Content</label>
         <textarea
-          id="content"
-          name="content"
+          {...noteInput('content')}
           rows={8}
           placeholder="Write your thoughts here..."
-          className={css.textarea}
-          value={draft.content}
-          onChange={handleChange}
+          className={`${css.textarea} ${errors.content ? css.inputError : ''}`}
         />
-        {errors.content && <span className={css.error}>{errors.content}</span>}
+        {errors.content && <span className={css.error}>{errors.content.message}</span>}
       </div>
 
       <div className={css.formGroup}>
         <label htmlFor="tag">Tag</label>
-        <select
-          id="tag"
-          name="tag"
-          className={css.select}
-          value={draft.tag}
-          onChange={handleChange}
-        >
+        <select {...noteInput('tag')} className={css.select}>
           {NOTE_TAGS.map(tag => (
             <option key={tag} value={tag}>
               {tag}
             </option>
           ))}
         </select>
+        {errors.tag && <span className={css.error}>{errors.tag.message}</span>}
       </div>
 
       <div className={css.actions}>
@@ -134,11 +96,11 @@ export default function NoteForm() {
           type="button"
           className={css.cancelButton}
           onClick={() => router.back()}
-          disabled={isPending}
+          disabled={isPending || isSubmitting}
         >
           Cancel
         </button>
-        <button type="submit" className={css.submitButton} disabled={isPending}>
+        <button type="submit" className={css.submitButton} disabled={isPending || isSubmitting}>
           {isPending ? 'Creating...' : 'Create note'}
         </button>
       </div>

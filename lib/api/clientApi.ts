@@ -1,6 +1,6 @@
 import { nextServer } from './api';
 import type { User } from '@/types/user';
-import type { Note, NoteFormValues, FetchNotesParams, FetchNotesResponse } from '@/types/note';
+import type { Note, NoteSchema, FetchNotesParams, FetchNotesResponse } from '@/types/note';
 import type {
   CheckSessionRequest,
   LoginRequest,
@@ -81,7 +81,7 @@ export const fetchNoteById = async (id: string): Promise<Note> => {
   });
 };
 
-export const createNote = async (noteData: NoteFormValues): Promise<Note> => {
+export const createNote = async (noteData: NoteSchema): Promise<Note> => {
   return withRefresh(async () => {
     const { data } = await nextServer.post<Note>('/notes', noteData);
     return data;

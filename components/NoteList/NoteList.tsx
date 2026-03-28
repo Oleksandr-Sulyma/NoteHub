@@ -19,13 +19,41 @@ export default function NoteList({ notes }: NoteListProps) {
     mutationFn: (id: string) => deleteNote(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['notes'] });
-      toast.success('Note deleted successfully'); 
+      toast.success('Note deleted successfully', { duration: 2000 });
     },
     onError: error => {
-      logErrorResponse(error); 
-      toast.error('Could not delete the note. Please try again.');
+      logErrorResponse(error);
+      toast.error('Could not delete the note. Please try again.', { duration: 2000 });
     },
   });
+
+  const confirmDelete = (id: string) => {
+    toast(
+      t => (
+        <span className={css.confirmToast}>
+          Are you sure?
+          <div className={css.toastButtons}>
+            <button
+              className={css.confirmBtn}
+              onClick={() => {
+                deleteNoteM(id);
+                toast.dismiss(t.id);
+              }}
+            >
+              Yes, delete
+            </button>
+            <button className={css.cancelBtn} onClick={() => toast.dismiss(t.id)}>
+              Cancel
+            </button>
+          </div>
+        </span>
+      ),
+      {
+        duration: 5000,
+        position: 'top-center',
+      }
+    );
+  };
 
   return (
     <ul className={css.list}>
@@ -41,11 +69,7 @@ export default function NoteList({ notes }: NoteListProps) {
             <button
               className={css.button}
               disabled={isPending}
-              onClick={() => {
-                if (window.confirm('Are you sure you want to delete this note?')) {
-                  deleteNoteM(note._id);
-                }
-              }}
+              onClick={() => confirmDelete(note._id)}
             >
               {isPending ? 'Deleting...' : 'Delete'}
             </button>

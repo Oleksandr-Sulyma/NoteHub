@@ -5,13 +5,13 @@
 .form {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 6px;
   max-width: 400px;
   margin: 40px auto;
   padding: 24px;
   background-color: #fff;
   border: 1px solid #dee2e6;
-  border-radius: 8px;
+  border-radius: 16px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
 }
 
@@ -29,6 +29,7 @@
   font-size: 14px;
   font-weight: 500;
   color: #212529;
+  height: 72px;
 }
 
 .input {
@@ -37,6 +38,10 @@
   font-size: 14px;
   border: 1px solid #ced4da;
   border-radius: 4px;
+}
+
+.inputError {
+  border: 1px solid #dc3545;
 }
 
 .actions {
@@ -57,7 +62,7 @@
 }
 
 .submitButton:hover {
-  background-color: #0d6efd;
+  background-color: #0b5ed7;
 }
 
 .submitButton:disabled {
@@ -65,9 +70,53 @@
   cursor: not-allowed;
 }
 
-.error {
+.errorText {
   color: #dc3545;
   font-size: 12px;
   margin-top: 4px;
-  text-align: center;
+  text-align: left;
+}
+
+.errorSummary {
+  background-color: #f8d7da; 
+  color: #842029;       
+  border: 1px solid #f5c2c7; 
+  padding: 10px 12px;   
+  border-radius: 4px;   
+  font-size: 14px;          
+  margin-top: 16px;  
+  text-align: center;      
+  width: 100%;          
+}
+
+.passwordWrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 100%;
+}
+
+.passwordWrapper .input {
+  width: 100%;
+  padding-right: 40px;
+  margin-top: 4px;
+}
+
+.eyeButton {
+  position: absolute;
+  right: 10px;
+  top: 55%; 
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 5px;
+  font-size: 18px;
+  line-height: 1;
+  color: #6c757d;
+  transition: opacity 0.2s;
+}
+
+.eyeButton:hover {
+  opacity: 0.7;
 }

@@ -1,81 +1,105 @@
 'use client';
 
-import css from './SignInPage.module.css';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import * as z from 'zod';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { login } from '@/lib/api/clientApi';
-import type { LoginRequest } from '@/types/requests';
-import { useAuthStore } from '@/lib/store/authStore'; 
+import { useAuthStore } from '@/lib/store/authStore';
 import { isAxiosError } from 'axios';
+import { toast } from 'react-hot-toast';
+import css from './SignInPage.module.css';
+
+const signInSchema = z.object({
+  email: z.string().email('Invalid email or password'),
+  password: z.string().min(6, 'Invalid email or password'),
+});
+
+type SignInSchema = z.infer<typeof signInSchema>;
 
 export default function SignIn() {
-  const router = useRouter(); 
-  const [error, setError] = useState('');
-  const [isPending, setIsPending] = useState(false); 
-
+  const [showPassword, setShowPassword] = useState(false);
+  const router = useRouter();
   const setUser = useAuthStore(state => state.setUser);
 
-  const handleSubmit = async (formData: FormData) => {
-    setIsPending(true); 
+  const {
+    register: loginInput,
+    handleSubmit,
+    formState: { errors, isSubmitting, isValid },
+  } = useForm<SignInSchema>({
+    resolver: zodResolver(signInSchema),
+    mode: 'onTouched',
+    defaultValues: {
+      email: '',
+      password: '',
+    },
+  });
+
+  const onValidationError = () => {
+    toast.error('Invalid email or password');
+  };
+
+  const onSubmit = async (data: SignInSchema) => {
+    const loadingToast = toast.loading('Logging in...');
 
     try {
-      const formValues = Object.fromEntries(formData) as unknown as LoginRequest;
-      const user = await login(formValues);
-
+      const user = await login(data);
       if (user) {
         setUser(user);
+        toast.success(`Welcome back, ${user.username || 'user'}!`, { id: loadingToast });
         router.push('/profile');
-        router.refresh(); 
-      } else {
-        setError('Invalid email or password');
+        router.refresh();
       }
     } catch (err) {
-      if (isAxiosError(err)) {
-        setError(err.response?.data?.message || 'Invalid email or password');
+      if (isAxiosError(err) && err.response) {
+        toast.error('Invalid email or password', { id: loadingToast });
       } else {
-        setError('Something went wrong. Please try again.');
+        toast.error('Connection error. Please try again.', { id: loadingToast });
       }
-    } finally {
-      setIsPending(false);
     }
   };
 
   return (
     <main className={css.mainContent}>
-      <form action={handleSubmit} className={css.form}>
+      <form onSubmit={handleSubmit(onSubmit, onValidationError)} className={css.form} noValidate>
         <h1 className={css.formTitle}>Sign in</h1>
 
         <div className={css.formGroup}>
           <label htmlFor="email">Email</label>
           <input
-            id="email"
+            {...loginInput('email')}
             type="email"
-            name="email"
-            className={css.input}
-            required
-            autoComplete="email"
+            className={`${css.input} ${errors.email ? css.inputError : ''}`}
+            placeholder="example@mail.com"
           />
         </div>
 
         <div className={css.formGroup}>
           <label htmlFor="password">Password</label>
-          <input
-            id="password"
-            type="password"
-            name="password"
-            className={css.input}
-            required
-            autoComplete="current-password"
-          />
+          <div className={css.passwordWrapper}>
+            <input
+              {...loginInput('password')}
+              type={showPassword ? 'text' : 'password'}
+              className={`${css.input} ${errors.password ? css.inputError : ''}`}
+              placeholder="Enter your password"
+            />
+            <button
+              type="button"
+              onClick={() => setShowPassword(!showPassword)}
+              className={css.eyeButton}
+              tabIndex={-1}
+            >
+              {showPassword ? '🙈' : '👁️'}
+            </button>
+          </div>
         </div>
 
         <div className={css.actions}>
-          <button type="submit" className={css.submitButton} disabled={isPending}>
-            {isPending ? 'Logging in...' : 'Log in'}
+          <button type="submit" className={css.submitButton} disabled={isSubmitting}>
+            {isSubmitting ? 'Logging in...' : 'Log in'}
           </button>
         </div>
-
-        {error && <p className={css.error}>{error}</p>}
       </form>
     </main>
   );

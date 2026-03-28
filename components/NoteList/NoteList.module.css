@@ -92,3 +92,34 @@
 .link:hover {
   background-color: #0b5ed7;
 }
+
+.confirmToast {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+
+.toastButtons {
+  display: flex;
+  gap: 8px;
+}
+
+.confirmBtn {
+  background-color: #dc3545;
+  color: white;
+  border: none;
+  padding: 4px 8px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 12px;
+}
+
+.cancelBtn {
+  background-color: #f8f9fa;
+  border: 1px solid #dee2e6;
+  padding: 4px 8px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 12px;
+}

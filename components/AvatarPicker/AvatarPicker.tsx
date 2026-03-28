@@ -49,31 +49,35 @@ const AvatarPicker = ({ profilePhotoUrl, onChangePhoto }: Props) => {
     setPreviewUrl('');
   };
 
-  const isLocal = previewUrl.startsWith('data:');
+  let validSrc = previewUrl && previewUrl.trim() !== '' ? previewUrl : '/default-avatar.png';
+  validSrc = validSrc.replace(/[<>]/g, '');
+  const isLocal = validSrc.startsWith('data:') || validSrc.startsWith('blob:');
 
   return (
     <div>
       <div className={css.picker}>
-        {previewUrl &&
-          (isLocal ? (
-            <img src={previewUrl} alt="User avatar preview" className={css.avatar} />
+        <div className={css.imageContainer}>
+          {isLocal ? (
+            <img src={validSrc} alt="User avatar preview" className={css.avatar} />
           ) : (
             <Image
-              src={previewUrl}
+              src={validSrc}
               alt="User avatar preview"
-              width={300}
-              height={300}
+              width={150}
+              height={150}
               className={css.avatar}
+              priority
             />
-          ))}
+          )}
+        </div>
 
         <label className={previewUrl ? `${css.wrapper} ${css.reload}` : css.wrapper}>
-          📷 Choose photo
+          📷 {previewUrl ? 'Change photo' : 'Choose photo'}
           <input type="file" accept="image/*" onChange={handleFileChange} className={css.input} />
         </label>
 
         {previewUrl && (
-          <button type="button" className={css.remove} onClick={handleRemove}>
+          <button type="button" className={css.remove} onClick={handleRemove} title="Remove photo">
             ❌
           </button>
         )}

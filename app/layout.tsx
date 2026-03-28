@@ -1,4 +1,3 @@
-
 import type { Metadata } from 'next';
 import { Roboto } from 'next/font/google';
 import './globals.css';
@@ -8,8 +7,8 @@ import TanStackProvider from '@/components/TanStackProvider/TanStackProvider';
 import AuthProvider from '@/components/AuthProvider/AuthProvider';
 import { SITE_NAME, BASE_URL, OG_IMAGE } from '@/lib/constants/seo';
 import { Toaster } from 'react-hot-toast';
-import { getServerMe } from '@/lib/api/serverApi'; 
-import AuthInitializer from '@/components/AuthInitializer/AuthInitializer'; 
+import { getServerMe } from '@/lib/api/serverApi';
+import AuthInitializer from '@/components/AuthInitializer/AuthInitializer';
 
 export const dynamic = 'force-dynamic';
 
@@ -48,12 +47,16 @@ export default async function RootLayout({
         <TanStackProvider>
           <AuthProvider>
             <Header />
-            <main className="main">
-              {children}
-            </main>
+            <main className="main">{children}</main>
             {modal}
             <Footer />
-            <Toaster position="top-right" reverseOrder={false} />
+            <Toaster
+              toastOptions={{
+                duration: 2000,
+              }}
+              position="top-right"
+              reverseOrder={false}
+            />
           </AuthProvider>
         </TanStackProvider>
         <div id="modal-root"></div>

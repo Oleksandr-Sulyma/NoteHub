@@ -1,3 +1,5 @@
+import * as z from 'zod';
+
 export const NOTE_TAGS = [
   'Todo',
   'Work',
@@ -25,12 +27,6 @@ export interface Note {
   tag: NoteTag;
 }
 
-export interface NoteFormValues {
-  title: string;
-  content: string;
-  tag: NoteTag;
-}
-
 export interface FetchNotesResponse {
   notes: Note[];
   totalPages: number;
@@ -41,3 +37,11 @@ export interface FetchNotesParams {
   page?: number;
   tag?: NoteTag | string;
 }
+
+export const noteSchema = z.object({
+  title: z.string().min(3, 'Min 3 characters').max(50, 'Max 50 characters'),
+  content: z.string().max(500, 'Max 500 characters').optional().or(z.literal('')),
+  tag: z.enum(NOTE_TAGS, 'Please select a valid tag'),
+});
+
+export type NoteSchema = z.infer<typeof noteSchema>;
