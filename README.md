@@ -1,3 +1,5 @@
+# 🇬🇧
+
 # 📓 NoteHub
 
 **NoteHub** is a powerful desktop note-taking application built with a modern tech stack: **Next.js 15, React 19, and TanStack Query**.  
@@ -110,7 +112,7 @@ npm run dev
 
 ---
 
-# 🇺🇦 Українська версія
+# 🇺🇦
 
 # 📓 NoteHub
 

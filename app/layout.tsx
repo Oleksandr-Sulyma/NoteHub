@@ -15,6 +15,10 @@ export const dynamic = 'force-dynamic';
 export const metadata: Metadata = {
   title: SITE_NAME,
   description: 'Simple and efficient note management application.',
+  manifest: '/site.webmanifest',
+  icons: {
+    apple: '/apple-icon.png', 
+  },
   openGraph: {
     title: SITE_NAME,
     description: 'Simple and efficient note management application.',
